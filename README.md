@@ -39,3 +39,5 @@ Make commands:
 - publish-pypi: publish package in pypi.org
 - publish-test-pypi: publish package in test.pypi.org
 - clean: remove the environment
+
+NOTE: Python2 is supported to enable the usage in platforms like [Amazon Redshift](https://aws.amazon.com/redshift/).
