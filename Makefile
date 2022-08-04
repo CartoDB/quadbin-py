@@ -1,12 +1,14 @@
 VENV=venv
-PIP=$(VENV)/bin/pip
-PYTHON=$(VENV)/bin/python
+BIN=$(VENV)/bin
+PIP=$(BIN)/pip
+PYTHON=$(BIN)/python
 
 init:
 	test `command -v python3` || echo Please install python3
 	[ -d $(VENV) ] || python3 -m venv $(VENV)
 	$(PIP) install -r requirements_dev.txt
 	$(PIP) install -e .
+	$(BIN)/pre-commit install
 
 lint:
 	$(PYTHON) -m black -q quadbin tests setup.py
