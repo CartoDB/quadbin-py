@@ -1,0 +1,4 @@
+wheel==0.37.1
+flake8==3.9.2
+pytest==4.6.11
+pytest-cov==2.12.1
