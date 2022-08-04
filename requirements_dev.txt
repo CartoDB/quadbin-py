@@ -6,3 +6,5 @@ pytest==7.1.2
 requests-mock==1.9.3
 pre-commit==2.20.0
 pytest-cov==3.0.0
+pytest-benchmark==3.4.1
+pytest-benchmark[histogram]==8.0.0

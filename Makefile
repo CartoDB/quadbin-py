@@ -13,7 +13,10 @@ lint:
 	$(BIN)/flake8 quadbin/ tests/ setup.py
 
 test:
-	$(BIN)/pytest --cov=quadbin tests/
+	$(BIN)/pytest --cov=quadbin tests/unit/
+
+test-benchmark:
+	$(BIN)/pytest tests/benchmark/ --benchmark-histogram
 
 publish-pypi:
 	rm -rf ./dist/*
