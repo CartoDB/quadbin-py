@@ -1,31 +1,29 @@
 VENV=venv
 BIN=$(VENV)/bin
-PIP=$(BIN)/pip
-PYTHON=$(BIN)/python
 
 init:
 	test `command -v python3` || echo Please install python3
 	[ -d $(VENV) ] || python3 -m venv $(VENV)
-	$(PIP) install -r requirements_dev.txt
-	$(PIP) install -e .
+	$(BIN)/pip install -r requirements_dev.txt
+	$(BIN)/pip install -e .
 	$(BIN)/pre-commit install
 
 lint:
-	$(PYTHON) -m black -q quadbin tests setup.py
-	$(PYTHON) -m flake8 quadbin tests setup.py
+	$(BIN)/black -q quadbin/ tests/ setup.py
+	$(BIN)/flake8 quadbin/ tests/ setup.py
 
 test:
-	$(PYTHON) -m pytest tests
+	$(BIN)/pytest --cov=quadbin tests/
 
 publish-pypi:
 	rm -rf ./dist/*
-	$(PYTHON) setup.py sdist bdist_wheel
-	$(PYTHON) -m twine upload dist/*
+	$(BIN)/python setup.py sdist bdist_wheel
+	$(BIN)/twine upload dist/*
 
 publish-test-pypi:
 	rm -rf ./dist/*
-	$(PYTHON) setup.py sdist bdist_wheel
-	$(PYTHON) -m twine upload --repository-url https://test.pypi.org/legacy/ dist/* --verbose
+	$(BIN)/python setup.py sdist bdist_wheel
+	$(BIN)/twine upload --repository-url https://test.pypi.org/legacy/ dist/* --verbose
 
 clean:
 	rm -rf venv
