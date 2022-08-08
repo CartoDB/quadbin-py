@@ -1,3 +1,4 @@
+from .tilecover import get_tiles
 from .utils import (
     clip_latitude,
     clip_longitude,
@@ -5,6 +6,18 @@ from .utils import (
     tile_to_longitude,
     tile_to_latitude,
 )
+
+HEADER = 0x4000000000000000
+FOOTER = 0xFFFFFFFFFFFFF
+B = [
+    0x5555555555555555,
+    0x3333333333333333,
+    0x0F0F0F0F0F0F0F0F,
+    0x00FF00FF00FF00FF,
+    0x0000FFFF0000FFFF,
+    0x00000000FFFFFFFF,
+]
+S = [1, 2, 4, 8, 16]
 
 
 def is_valid_index(index):
@@ -18,10 +31,10 @@ def is_valid_index(index):
     -------
     bool
     """
-    header = 0x4000000000000000
+    header = HEADER
     mode = (index >> 59) & 7
     resolution = (index >> 52) & 0x1F
-    unused = 0xFFFFFFFFFFFFF >> (resolution << 2)
+    unused = FOOTER >> (resolution << 2)
     return (
         index >= 0
         and (index & header == header)
@@ -43,10 +56,10 @@ def is_valid_cell(cell):
     -------
     bool
     """
-    header = 0x4000000000000000
+    header = HEADER
     mode = (cell >> 59) & 7
     resolution = (cell >> 52) & 0x1F
-    unused = 0xFFFFFFFFFFFFF >> (resolution << 2)
+    unused = FOOTER >> (resolution << 2)
     return (
         cell >= 0
         and (cell & header == header)
@@ -68,39 +81,30 @@ def cell_to_tile(cell):
     -------
     tile: tuple (x, y, z)
     """
-    b = [
-        0x5555555555555555,
-        0x3333333333333333,
-        0x0F0F0F0F0F0F0F0F,
-        0x00FF00FF00FF00FF,
-        0x0000FFFF0000FFFF,
-        0x00000000FFFFFFFF,
-    ]
-    s = [1, 2, 4, 8, 16]
-
     # mode = (cell >> 59) & 7
     # extra = (cell >> 57) & 3
     z = cell >> 52 & 31
-    q = (cell & 0xFFFFFFFFFFFFF) << 12
+    q = (cell & FOOTER) << 12
     x = q
     y = q >> 1
-    x = x & b[0]
-    y = y & b[0]
 
-    x = (x | (x >> s[0])) & b[1]
-    y = (y | (y >> s[0])) & b[1]
+    x = x & B[0]
+    y = y & B[0]
 
-    x = (x | (x >> s[1])) & b[2]
-    y = (y | (y >> s[1])) & b[2]
+    x = (x | (x >> S[0])) & B[1]
+    y = (y | (y >> S[0])) & B[1]
 
-    x = (x | (x >> s[2])) & b[3]
-    y = (y | (y >> s[2])) & b[3]
+    x = (x | (x >> S[1])) & B[2]
+    y = (y | (y >> S[1])) & B[2]
 
-    x = (x | (x >> s[3])) & b[4]
-    y = (y | (y >> s[3])) & b[4]
+    x = (x | (x >> S[2])) & B[3]
+    y = (y | (y >> S[2])) & B[3]
 
-    x = (x | (x >> s[4])) & b[5]
-    y = (y | (y >> s[4])) & b[5]
+    x = (x | (x >> S[3])) & B[4]
+    y = (y | (y >> S[3])) & B[4]
+
+    x = (x | (x >> S[4])) & B[5]
+    y = (y | (y >> S[4])) & B[5]
 
     x = x >> (32 - z)
     y = y >> (32 - z)
@@ -124,38 +128,23 @@ def tile_to_cell(tile):
     x = x << (32 - z)
     y = y << (32 - z)
 
-    b = [
-        0x5555555555555555,
-        0x3333333333333333,
-        0x0F0F0F0F0F0F0F0F,
-        0x00FF00FF00FF00FF,
-        0x0000FFFF0000FFFF,
-    ]
-    s = [1, 2, 4, 8, 16]
+    x = (x | (x << S[4])) & B[4]
+    y = (y | (y << S[4])) & B[4]
 
-    x = (x | (x << s[4])) & b[4]
-    y = (y | (y << s[4])) & b[4]
+    x = (x | (x << S[3])) & B[3]
+    y = (y | (y << S[3])) & B[3]
 
-    x = (x | (x << s[3])) & b[3]
-    y = (y | (y << s[3])) & b[3]
+    x = (x | (x << S[2])) & B[2]
+    y = (y | (y << S[2])) & B[2]
 
-    x = (x | (x << s[2])) & b[2]
-    y = (y | (y << s[2])) & b[2]
+    x = (x | (x << S[1])) & B[1]
+    y = (y | (y << S[1])) & B[1]
 
-    x = (x | (x << s[1])) & b[1]
-    y = (y | (y << s[1])) & b[1]
-
-    x = (x | (x << s[0])) & b[0]
-    y = (y | (y << s[0])) & b[0]
+    x = (x | (x << S[0])) & B[0]
+    y = (y | (y << S[0])) & B[0]
 
     # -- | (mode << 59) | (mode_dep << 57)
-    return (
-        0x4000000000000000
-        | (1 << 59)
-        | (z << 52)
-        | ((x | (y << 1)) >> 12)
-        | (0xFFFFFFFFFFFFF >> (z * 2))
-    )
+    return HEADER | (1 << 59) | (z << 52) | ((x | (y << 1)) >> 12) | (FOOTER >> (z * 2))
 
 
 def cell_to_point(cell, geojson=False):
@@ -286,7 +275,7 @@ def get_resolution(index):
 
 
 def index_to_string(index):
-    """Convert an index (numeric) into its string representation.
+    """Convert an index into its string representation.
 
     Parameters
     ----------
@@ -295,12 +284,13 @@ def index_to_string(index):
     Returns
     -------
     str
+        The hexadecimal representation of the input decimal integer.
     """
     return hex(index)[2:]
 
 
 def string_to_index(index):
-    """Convert an index (string) into its numeric representation.
+    """Convert an index into its numeric representation.
 
     Parameters
     ----------
@@ -309,6 +299,7 @@ def string_to_index(index):
     Returns
     -------
     int
+        The decimal representation of the input hexadecimal string.
     """
     return int(index, base=16)
 
@@ -381,7 +372,7 @@ def k_ring_distances(origin, k):
             neighbors.append(
                 {
                     "index": traversal_quadbin,
-                    "distance": max(abs(i - k), abs(j - k)),  # Chebychev distance
+                    "distance": max(abs(i - k), abs(j - k)),  # Chebyshev distance
                 }
             )
             traversal_quadbin = cell_sibling(traversal_quadbin, "right")
@@ -468,7 +459,7 @@ def cell_to_parent(cell, parent_resolution):
     return (
         (cell & ~(0x1F << 52))
         | (parent_resolution << 52)
-        | (0xFFFFFFFFFFFFF >> (parent_resolution << 2))
+        | (FOOTER >> (parent_resolution << 2))
     )
 
 
@@ -524,8 +515,6 @@ def geometry_to_cells(geometry, resolution):
     list
         Cells intersecting the geometry.
     """
-    from .tilecover import get_tiles
-
     # TODO: GeometryCollection
 
     return [
