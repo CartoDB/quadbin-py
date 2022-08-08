@@ -110,9 +110,34 @@ def point_to_tile(longitude, latitude, resolution):
     """
     z = resolution
     powz = 1 << z
-    tanlat = math.tan(math.pi / 4.0 + latitude / 2.0 * math.pi / 180.0)
-    x = int(math.floor(powz * ((longitude / 360.0) + 0.5))) & (powz - 1)
-    y = int(math.floor(powz * (0.5 - (math.log(tanlat) / (2 * math.pi))))) & (powz - 1)
+    tanlat = math.tan(math.pi / 4.0 + latitude * math.pi / 360.0)
+    x = int(math.floor(powz * ((longitude / 360.0) + 0.5)))
+    y = int(math.floor(powz * (0.5 - (math.log(tanlat) / (2 * math.pi)))))
+
+    return (x, y, z)
+
+
+def point_to_tile_fraction(longitude, latitude, resolution):
+    """Compute the tile in fractions for a longitude and latitude in a specific resolution.
+
+    Parameters
+    ----------
+    longitude : float
+        Longitude in decimal degrees.
+    latitude : float
+        Latitude in decimal degrees.
+    resolution : int
+        The resolution of the tile.
+
+    Returns
+    -------
+    tile: tuple (x, y, z)
+    """
+    z = resolution
+    powz = 1 << z
+    tanlat = math.tan(math.pi / 4.0 + latitude * math.pi / 360.0)
+    x = powz * ((longitude / 360.0) + 0.5)
+    y = powz * (0.5 - (math.log(tanlat) / (2 * math.pi)))
 
     return (x, y, z)
 
@@ -185,26 +210,26 @@ def tile_k_ring(origin, k, extra=False):
     corner_tile = origin
 
     # Traverse to top left corner
-    for i in range(0, k):
+    for i in range(k):
         corner_tile = tile_sibling(corner_tile, LEFT)
         corner_tile = tile_sibling(corner_tile, UP)
 
     neighbors = []
     traversal_tile = 0
 
-    for j in range(0, k * 2 + 1):
+    for j in range(k * 2 + 1):
         traversal_tile = corner_tile
-        for i in range(0, k * 2 + 1):
+        for i in range(k * 2 + 1):
             if extra:
-                neighbors.append(
-                    (
-                        traversal_tile,
-                        max(abs(i - k), abs(j - k)),  # Chebyshev distance
-                    )
-                )
+                neighbors.append((traversal_tile, chebishev_distance([i, j], [k, k])))
             else:
                 neighbors.append(traversal_tile)
             traversal_tile = tile_sibling(traversal_tile, RIGHT)
         corner_tile = tile_sibling(corner_tile, DOWN)
 
     return neighbors
+
+
+def chebishev_distance(u, v):
+    """Compute the Chebishev distance between two 2D points."""
+    return max(abs(u[0] - v[0]), abs(u[1] - v[1]))
