@@ -1,8 +1,11 @@
 from .tilecover import get_tiles
 from .utils import (
+    DIRECTIONS,
     clip_latitude,
     clip_longitude,
     point_to_tile,
+    tile_k_ring,
+    tile_sibling,
     tile_to_longitude,
     tile_to_latitude,
 )
@@ -71,7 +74,6 @@ def is_valid_cell(cell):
 
 
 def cell_to_tile(cell):
-    # type: (int) -> str
     """Convert a cell into a tile.
 
     Parameters
@@ -124,6 +126,9 @@ def tile_to_cell(tile):
     -------
     int
     """
+    if tile is None:
+        return None
+
     x, y, z = tile
 
     x = x << (32 - z)
@@ -319,26 +324,18 @@ def k_ring(origin, k):
     -------
     list
         Indices in the k-ring.
+
+    Raises
+    ------
+    ValueError
+        If the k distance is negative.
     """
-    # TODO: review code
+    if k < 0:
+        raise ValueError("Invalid negative distance")
 
-    corner_quadbin = origin
-    # Traverse to top left corner
-    for i in range(0, k):
-        corner_quadbin = cell_sibling(corner_quadbin, "left")
-        corner_quadbin = cell_sibling(corner_quadbin, "up")
+    neighbors = tile_k_ring(cell_to_tile(origin), k, extra=False)
 
-    neighbors = []
-    traversal_quadbin = 0
-
-    for j in range(0, k * 2 + 1):
-        traversal_quadbin = corner_quadbin
-        for i in range(0, k * 2 + 1):
-            neighbors.append(traversal_quadbin)
-            traversal_quadbin = cell_sibling(traversal_quadbin, "right")
-        corner_quadbin = cell_sibling(corner_quadbin, "down")
-
-    return neighbors
+    return [tile_to_cell(neighbor) for neighbor in neighbors]
 
 
 def k_ring_distances(origin, k):
@@ -355,41 +352,31 @@ def k_ring_distances(origin, k):
     -------
     list
         Objects with the index and distance in the k-ring.
+
+    Raises
+    ------
+    ValueError
+        If the k distance is negative.
     """
-    # TODO: review code
+    if k < 0:
+        raise ValueError("Invalid negative distance")
 
-    corner_quadbin = origin
-    # Traverse to top left corner
-    for i in range(0, k):
-        corner_quadbin = cell_sibling(corner_quadbin, "left")
-        corner_quadbin = cell_sibling(corner_quadbin, "up")
+    neighbors = tile_k_ring(cell_to_tile(origin), k, extra=True)
 
-    neighbors = []
-    traversal_quadbin = 0
-
-    for j in range(0, k * 2 + 1):
-        traversal_quadbin = corner_quadbin
-        for i in range(0, k * 2 + 1):
-            neighbors.append(
-                {
-                    "index": traversal_quadbin,
-                    "distance": max(abs(i - k), abs(j - k)),  # Chebyshev distance
-                }
-            )
-            traversal_quadbin = cell_sibling(traversal_quadbin, "right")
-        corner_quadbin = cell_sibling(corner_quadbin, "down")
-
-    return neighbors
+    return [
+        {"index": tile_to_cell(neighbor[0]), "distance": neighbor[1]}
+        for neighbor in neighbors
+    ]
 
 
 def cell_sibling(cell, direction):
-    """Compute the sibling in a specific direction.
+    """Compute the sibling cell in a specific direction.
 
     Parameters
     ----------
     cell : int
     direction : str
-        Location of the sibling: "left", "right", "up", "down".
+        Location of the sibling: "up", "right", "left", "down".
 
     Returns
     -------
@@ -400,41 +387,14 @@ def cell_sibling(cell, direction):
     ValueError
         If a wrong direction is passed.
     """
-    # TODO: review code
-
     direction = direction.lower()
-    if direction not in ["left", "right", "up", "down"]:
+    if direction not in DIRECTIONS:
         raise ValueError("Wrong direction argument passed to sibling")
 
-    x, y, z = cell_to_tile(cell)
-    if z == 0:
-        return None
-    tiles_per_level = 2 << (z - 1)
-    if direction == "left":
-        if x > 0:
-            x = x - 1
-        else:
-            return None
+    tile = cell_to_tile(cell)
+    direction = DIRECTIONS[direction]
 
-    if direction == "right":
-        if x < tiles_per_level - 1:
-            x = x + 1
-        else:
-            return None
-
-    if direction == "up":
-        if y > 0:
-            y = y - 1
-        else:
-            return None
-
-    if direction == "down":
-        if y < tiles_per_level - 1:
-            y = y + 1
-        else:
-            return None
-
-    return tile_to_cell((x, y, z))
+    return tile_to_cell(tile_sibling(tile, direction))
 
 
 def cell_to_parent(cell, parent_resolution):
@@ -455,8 +415,10 @@ def cell_to_parent(cell, parent_resolution):
         If the parent resolution is not valid.
     """
     resolution = get_resolution(cell)
+
     if parent_resolution < 0 or parent_resolution > resolution:
         raise ValueError("Invalid resolution")
+
     return (
         (cell & ~(0x1F << 52))
         | (parent_resolution << 52)
@@ -482,9 +444,8 @@ def cell_to_children(cell, children_resolution):
     ValueError
         If the children resolution is not valid.
     """
-    # TODO: review code
-
     x, y, z = cell_to_tile(cell)
+
     if children_resolution < 0 or children_resolution > 26 or children_resolution <= z:
         raise ValueError("Invalid resolution")
 
@@ -494,10 +455,12 @@ def cell_to_children(cell, children_resolution):
     max_tile_x = min_tile_x | mask
     min_tile_y = y << diff_z
     max_tile_y = min_tile_y | mask
+
     children = []
     for x in range(min_tile_x, max_tile_x + 1):
         for y in range(min_tile_y, max_tile_y + 1):
-            children.append(tile_to_cell((children_resolution, x, y)))
+            children.append(tile_to_cell((x, y, children_resolution)))
+
     return children
 
 

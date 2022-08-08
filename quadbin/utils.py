@@ -5,6 +5,13 @@ MIN_LONGITUDE = -MAX_LONGITUDE
 MAX_LATITUDE = 85.051129
 MIN_LATITUDE = -MAX_LATITUDE
 
+UP = 0
+RIGHT = 1
+LEFT = 2
+DOWN = 3
+
+DIRECTIONS = {"up": UP, "right": RIGHT, "left": LEFT, "down": DOWN}
+
 
 def clip_number(num, lower, upper):
     """Limit input number by lower and upper limits.
@@ -108,3 +115,96 @@ def point_to_tile(longitude, latitude, resolution):
     y = int(math.floor(powz * (0.5 - (math.log(tanlat) / (2 * math.pi))))) & (powz - 1)
 
     return (x, y, z)
+
+
+def tile_sibling(tile, direction):
+    """Compute the sibling tile in a specific direction.
+
+    Parameters
+    ----------
+    tile : tuple (x, y, z)
+    direction : int
+        0 up, 1 right, 2, left, 3, down
+
+    Returns
+    -------
+    tuple (x, y, z)
+    """
+    x, y, z = tile
+
+    if z == 0:
+        return None
+
+    tiles_per_level = 2 << (z - 1)
+
+    if direction == UP:
+        if y > 0:
+            y = y - 1
+        else:
+            return None
+
+    if direction == RIGHT:
+        if x < tiles_per_level - 1:
+            x = x + 1
+        else:
+            return None
+
+    if direction == LEFT:
+        if x > 0:
+            x = x - 1
+        else:
+            return None
+
+    if direction == DOWN:
+        if y < tiles_per_level - 1:
+            y = y + 1
+        else:
+            return None
+
+    return x, y, z
+
+
+def tile_k_ring(origin, k, extra=False):
+    """Compute the tiles within k distance of the origin tile.
+
+    Parameters
+    ----------
+    origin : tuple (x, y, z)
+        Origin tile.
+    k : int
+        Distance of the ring.
+    extra : bool
+        If True return the extra tuple (tile, distance).
+        Otherwise, return only the tile.
+
+    Returns
+    -------
+    list
+        Tiles in the k-ring.
+    """
+    corner_tile = origin
+
+    # Traverse to top left corner
+    for i in range(0, k):
+        corner_tile = tile_sibling(corner_tile, LEFT)
+        corner_tile = tile_sibling(corner_tile, UP)
+
+    neighbors = []
+    traversal_tile = 0
+
+    for j in range(0, k * 2 + 1):
+        traversal_tile = corner_tile
+        for i in range(0, k * 2 + 1):
+            if extra:
+                neighbors.append(
+                    (
+                        traversal_tile,
+                        max(abs(i - k), abs(j - k)),  # Chebyshev distance
+                    )
+                )
+            else:
+                neighbors.append(traversal_tile)
+            traversal_tile = tile_sibling(traversal_tile, RIGHT)
+        corner_tile = tile_sibling(corner_tile, DOWN)
+
+    return neighbors
