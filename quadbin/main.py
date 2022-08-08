@@ -479,9 +479,6 @@ def geometry_to_cells(geometry, resolution):
     list
         Cells intersecting the geometry.
     """
-    # TODO: GeometryCollection
+    # TODO: Support GeometryCollection
 
-    return [
-        tile_to_cell((int(tile[0]), int(tile[1]), int(tile[2])))
-        for tile in get_tiles(geometry, resolution)
-    ]
+    return [tile_to_cell(tile) for tile in get_tiles(geometry, resolution)]
