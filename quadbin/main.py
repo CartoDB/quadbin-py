@@ -71,6 +71,7 @@ def is_valid_cell(cell):
 
 
 def cell_to_tile(cell):
+    # type: (int) -> str
     """Convert a cell into a tile.
 
     Parameters
@@ -192,11 +193,11 @@ def point_to_cell(longitude, latitude, resolution):
 
     Raises
     ------
-    Exception
+    ValueError
         If the resolution is out of bounds.
     """
     if resolution < 0 or resolution > 26:
-        raise Exception("Invalid resolution: should be between 0 and 26")
+        raise ValueError("Invalid resolution: should be between 0 and 26")
 
     longitude = clip_longitude(longitude)
     latitude = clip_latitude(latitude)
@@ -396,14 +397,14 @@ def cell_sibling(cell, direction):
 
     Raises
     ------
-    Exception
+    ValueError
         If a wrong direction is passed.
     """
     # TODO: review code
 
     direction = direction.lower()
     if direction not in ["left", "right", "up", "down"]:
-        raise Exception("Wrong direction argument passed to sibling")
+        raise ValueError("Wrong direction argument passed to sibling")
 
     x, y, z = cell_to_tile(cell)
     if z == 0:
@@ -450,12 +451,12 @@ def cell_to_parent(cell, parent_resolution):
 
     Raises
     ------
-    Exception
+    ValueError
         If the parent resolution is not valid.
     """
     resolution = get_resolution(cell)
     if parent_resolution < 0 or parent_resolution > resolution:
-        raise Exception("Invalid resolution")
+        raise ValueError("Invalid resolution")
     return (
         (cell & ~(0x1F << 52))
         | (parent_resolution << 52)
@@ -478,14 +479,14 @@ def cell_to_children(cell, children_resolution):
 
     Raises
     ------
-    Exception
+    ValueError
         If the children resolution is not valid.
     """
     # TODO: review code
 
     x, y, z = cell_to_tile(cell)
     if children_resolution < 0 or children_resolution > 26 or children_resolution <= z:
-        raise Exception("Invalid resolution")
+        raise ValueError("Invalid resolution")
 
     diff_z = children_resolution - z
     mask = (1 << diff_z) - 1

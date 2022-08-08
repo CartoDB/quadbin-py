@@ -2,18 +2,30 @@ import pytest
 import quadbin
 
 
-def test_is_valid_index():
-    assert quadbin.is_valid_index(0) is False
-    assert quadbin.is_valid_index(5209574053332910078) is False
-    assert quadbin.is_valid_index(6362495557939757055) is True
-    assert quadbin.is_valid_index(5209574053332910079) is True
+@pytest.mark.parametrize(
+    "index,expected",
+    [
+        (0, False),
+        (5209574053332910078, False),
+        (6362495557939757055, True),
+        (5209574053332910079, True),
+    ],
+)
+def test_is_valid_index(index, expected):
+    assert quadbin.is_valid_index(index) is expected
 
 
-def test_is_valid_cell():
-    assert quadbin.is_valid_cell(0) is False
-    assert quadbin.is_valid_cell(5209574053332910078) is False
-    assert quadbin.is_valid_cell(6362495557939757055) is False
-    assert quadbin.is_valid_cell(5209574053332910079) is True
+@pytest.mark.parametrize(
+    "index,expected",
+    [
+        (0, False),
+        (5209574053332910078, False),
+        (6362495557939757055, False),
+        (5209574053332910079, True),
+    ],
+)
+def test_is_valid_cell(index, expected):
+    assert quadbin.is_valid_cell(index) is expected
 
 
 def test_cell_to_tile():
@@ -36,6 +48,10 @@ def test_cell_to_point():
 
 def test_point_to_cell():
     assert quadbin.point_to_cell(33.75, -11.178401873711776, 4) == 5209574053332910079
+    with pytest.raises(ValueError, match="Invalid resolution"):
+        assert quadbin.point_to_cell(33.75, -11.178401873711776, -1)
+    with pytest.raises(ValueError, match="Invalid resolution"):
+        assert quadbin.point_to_cell(33.75, -11.178401873711776, 27)
 
 
 def test_cell_to_boundary():
@@ -112,9 +128,9 @@ def test_cell_to_parent():
     assert quadbin.cell_to_parent(5209574053332910079, 4) == 5209574053332910079
     assert quadbin.cell_to_parent(5209574053332910079, 2) == 5200566854078169087
     assert quadbin.cell_to_parent(5209574053332910079, 0) == 5192650370358181887
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="Invalid resolution"):
         assert quadbin.cell_to_parent(5209574053332910079, 5)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="Invalid resolution"):
         assert quadbin.cell_to_parent(5209574053332910079, -1)
 
 
@@ -125,11 +141,11 @@ def test_cell_to_children():
         5260204365334970367,
         5264707964537667583,
     ]
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="Invalid resolution"):
         assert quadbin.cell_to_children(5209574053332910079, 27)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="Invalid resolution"):
         assert quadbin.cell_to_children(5209574053332910079, 4)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError, match="Invalid resolution"):
         assert quadbin.cell_to_children(5209574053332910079, -1)
 
 
