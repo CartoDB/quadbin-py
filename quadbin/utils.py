@@ -233,3 +233,8 @@ def tile_k_ring(origin, k, extra=False):
 def chebishev_distance(u, v):
     """Compute the Chebishev distance between two 2D points."""
     return max(abs(u[0] - v[0]), abs(u[1] - v[1]))
+
+
+def distinct(array):
+    """Return distinct values of an array."""
+    return list(set(array))

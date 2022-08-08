@@ -535,3 +535,45 @@ def test_geometry_to_cells_multipolygon():
             5274793892420878335,
         ]
     )
+
+
+def test_geometry_to_cells_geometrycollection():
+    coordinates = [-3.7118983268737793, 40.4116172037252]
+    geometry_point = '{{"type":"Point","coordinates":{0}}}'.format(coordinates)
+    coordinates = [
+        [-3.71219873428345, 40.413365349070865],
+        [-3.7144088745117, 40.40965661286395],
+    ]
+    geometry_linestring = '{{"type":"LineString","coordinates":{0}}}'.format(
+        coordinates
+    )
+    geometry_collection = (
+        '{{"type":"GeometryCollection","geometries":[{0}, {1}]}}'.format(
+            geometry_point, geometry_linestring
+        )
+    )
+    assert quadbin.geometry_to_cells(geometry_collection, 0) == [5192650370358181887]
+    assert quadbin.geometry_to_cells(geometry_collection, 10) == [5234261499580514303]
+    assert sorted(quadbin.geometry_to_cells(geometry_collection, 17)) == sorted(
+        [
+            5265786693163941887,
+            5265786693164466175,
+            5265786693153193983,
+        ]
+    )
+    assert sorted(quadbin.geometry_to_cells(geometry_collection, 19)) == sorted(
+        [
+            5274793892407771135,
+            5274793892407803903,
+            5274793892407885823,
+            5274793892407902207,
+            5274793892407918591,
+            5274793892418453503,
+            5274793892418469887,
+            5274793892418486271,
+            5274793892418568191,
+            5274793892418600959,
+            5274793892418666495,
+            5274793892418961407,
+        ]
+    )

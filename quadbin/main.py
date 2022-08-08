@@ -1,8 +1,11 @@
+import json
+
 from .tilecover import get_tiles
 from .utils import (
     DIRECTIONS,
     clip_latitude,
     clip_longitude,
+    distinct,
     point_to_tile,
     tile_k_ring,
     tile_sibling,
@@ -479,6 +482,14 @@ def geometry_to_cells(geometry, resolution):
     list
         Cells intersecting the geometry.
     """
-    # TODO: Support GeometryCollection
+    tiles = []
+    geometry = json.loads(geometry)
 
-    return [tile_to_cell(tile) for tile in get_tiles(geometry, resolution)]
+    if geometry["type"] == "GeometryCollection":
+        for geom in geometry["geometries"]:
+            tiles += [tile for tile in get_tiles(geom, resolution)]
+        tiles = distinct(tiles)
+    else:
+        tiles = [tile for tile in get_tiles(geometry, resolution)]
+
+    return [tile_to_cell(tile) for tile in tiles]

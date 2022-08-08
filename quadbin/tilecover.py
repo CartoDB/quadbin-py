@@ -3,10 +3,9 @@
 
 from __future__ import division
 
-import json
 import math
 
-from .utils import point_to_tile, point_to_tile_fraction
+from .utils import distinct, point_to_tile, point_to_tile_fraction
 
 
 def get_tiles(geometry, resolution):
@@ -14,7 +13,7 @@ def get_tiles(geometry, resolution):
 
     Parameters
     ----------
-    geometry : str
+    geometry : dict
         Input geometry as GeoJSON.
     resolution : int
         The resolution of the cells.
@@ -29,10 +28,9 @@ def get_tiles(geometry, resolution):
     Exception
         If the geometry type is not supported.
     """
-    geom = json.loads(geometry)
     tiles_hashes = []
-    geom_type = geom["type"]
-    geom_coordinates = geom["coordinates"]
+    geom_type = geometry["type"]
+    geom_coordinates = geometry["coordinates"]
 
     get_tiles_hashes_function = {
         "Point": get_point_tiles_hashes,
@@ -269,5 +267,4 @@ def tiles_hashes_to_tiles(tiles_hashes):
     -------
     list
     """
-    tiles_hashes = list(set(tiles_hashes))  # unique ids
-    return [from_tile_hash(tile_hash) for tile_hash in tiles_hashes]
+    return [from_tile_hash(tile_hash) for tile_hash in distinct(tiles_hashes)]
