@@ -26,10 +26,10 @@ def get_tiles(geometry, resolution):
     tiles = []
 
     if geom["type"] == "Point":
-        return [point_to_tile((coords[0], coords[1], max_zoom))]
+        return [point_to_tile(coords[0], coords[1], max_zoom)]
     elif geom["type"] == "MultiPoint":
         for i in range(0, len(coords)):
-            tile = point_to_tile((coords[i][0], coords[i][1], max_zoom))
+            tile = point_to_tile(coords[i][0], coords[i][1], max_zoom)
             tile_hash[to_id(tile[0], tile[1], tile[2])] = True
     elif geom["type"] == "LineString":
         line_cover(tile_hash, coords, max_zoom, None)
