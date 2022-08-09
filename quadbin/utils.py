@@ -108,11 +108,10 @@ def point_to_tile(longitude, latitude, resolution):
     -------
     tile: tuple (x, y, z)
     """
-    z = resolution
-    powz = 1 << z
-    tanlat = math.tan(math.pi / 4.0 + latitude * math.pi / 360.0)
-    x = int(math.floor(powz * ((longitude / 360.0) + 0.5)))
-    y = int(math.floor(powz * (0.5 - (math.log(tanlat) / (2 * math.pi)))))
+    x, y, z = point_to_tile_fraction(longitude, latitude, resolution)
+
+    x = int(math.floor(x))
+    y = int(math.floor(y))
 
     return (x, y, z)
 
