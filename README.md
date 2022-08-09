@@ -23,11 +23,23 @@ pip install quadbin
 
 | Function |
 |---|
-| `cell_is_valid(index: int) -> bool` |
-| `cell_to_tile(index: int) -> {"z","x","y"}` |
-| `tile_to_cell(z: int, x: int, y: int) -> [longitude, latitude]` |
-| `point_to_cell(longitude: float, latitude: float, resolution: int) -> int` |
-| `get_resolution(index: int) -> int` |
+| `is_valid_index(index)` |
+| `is_valid_cell(cell)` |
+| `cell_to_tile(cell)` |
+| `tile_to_cell(tile)` |
+| `cell_to_point(cell, geojson=False)` |
+| `point_to_cell(longitude, latitude, resolution)` |
+| `cell_to_boundary(cell, geojson=False)` |
+| `cell_to_bounding_box(cell)` |
+| `get_resolution(index)` |
+| `index_to_string(index)` |
+| `string_to_index(index)` |
+| `k_ring(origin, k)` |
+| `k_ring_distances(origin, k)` |
+| `cell_sibling(cell, direction)` |
+| `cell_to_parent(cell, parent_resolution)` |
+| `cell_to_children(cell, children_resolution)` |
+| `geometry_to_cells(geometry, resolution)` |
 
 ## Development
 

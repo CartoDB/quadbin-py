@@ -7,6 +7,7 @@ init:
 	test `command -v $(PYTHON)` || echo Please install $(PYTHON)
 	pip install virtualenv
 	[ -d $(VENV) ] || virtualenv -p $(PYTHON) $(VENV)
+	$(BIN)/pip install --upgrade pip
 ifeq ($(PYTHON_VERSION),3)
 	$(BIN)/pip install -r requirements_dev.txt
 	$(BIN)/pre-commit install
@@ -17,12 +18,13 @@ endif
 
 lint:
 ifeq ($(PYTHON_VERSION),3)
-	$(BIN)/black -q quadbin/ tests/ setup.py
+	$(BIN)/black quadbin/ tests/ setup.py -q
 endif
-	$(BIN)/flake8 quadbin/ tests/ setup.py
+	$(BIN)/flake8 quadbin/ setup.py --docstring-convention numpy
+	$(BIN)/flake8 tests/ setup.py --ignore=D100,D103,D104
 
 test:
-	$(BIN)/pytest --cov=quadbin tests/unit/
+	$(BIN)/pytest tests/unit/ --cov=quadbin -vv
 
 test-benchmark:
 	$(BIN)/pytest tests/benchmark/ --benchmark-histogram
