@@ -27,7 +27,7 @@ test:
 	$(BIN)/pytest tests/unit/ --cov=quadbin -vv
 
 test-benchmark:
-	$(BIN)/pytest tests/benchmark/ --benchmark-histogram
+	$(BIN)/pytest tests/benchmark/  # --benchmark-histogram
 
 publish-pypi:
 	rm -rf ./dist/*
