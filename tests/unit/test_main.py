@@ -213,18 +213,22 @@ def test_cell_to_parent():
 
 
 def test_cell_to_children():
-    assert quadbin.cell_to_children(5192650370358181887, 1) == [
-        5193776270265024511,
-        5196028070078709759,
-        5194902170171867135,
-        5197153969985552383,
-    ]
-    assert quadbin.cell_to_children(5209574053332910079, 5) == [
-        5214064458820747263,
-        5214073254913769471,
-        5214068856867258367,
-        5214077652960280575,
-    ]
+    assert sorted(quadbin.cell_to_children(5192650370358181887, 1)) == sorted(
+        [
+            5193776270265024511,
+            5196028070078709759,
+            5194902170171867135,
+            5197153969985552383,
+        ]
+    )
+    assert sorted(quadbin.cell_to_children(5209574053332910079, 5)) == sorted(
+        [
+            5214064458820747263,
+            5214073254913769471,
+            5214068856867258367,
+            5214077652960280575,
+        ]
+    )
     with pytest.raises(ValueError, match="Invalid resolution"):
         assert quadbin.cell_to_children(5209574053332910079, 27)
     with pytest.raises(ValueError, match="Invalid resolution"):

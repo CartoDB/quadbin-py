@@ -447,22 +447,25 @@ def cell_to_children(cell, children_resolution):
     ValueError
         If the children resolution is not valid.
     """
-    x, y, z = cell_to_tile(cell)
+    resolution = (cell >> 52) & 0x1F
 
-    if children_resolution < 0 or children_resolution > 26 or children_resolution <= z:
+    if (
+        children_resolution < 0
+        or children_resolution > 26
+        or children_resolution <= resolution
+    ):
         raise ValueError("Invalid resolution")
 
-    diff_z = children_resolution - z
-    mask = (1 << diff_z) - 1
-    min_tile_x = x << diff_z
-    max_tile_x = min_tile_x | mask
-    min_tile_y = y << diff_z
-    max_tile_y = min_tile_y | mask
+    resolution_diff = children_resolution - resolution
+    child_base = (cell & ~(0x1F << 52)) | (children_resolution << 52)
+    child_base = child_base & ~(
+        ((resolution_diff << 2) - 1) << (50 - (resolution << 1))
+    )
 
     children = []
-    for x in range(min_tile_x, max_tile_x + 1):
-        for y in range(min_tile_y, max_tile_y + 1):
-            children.append(tile_to_cell((x, y, children_resolution)))
+    for x in range(resolution_diff << 2):
+        child = child_base | (x << (50 - (resolution << 1)))
+        children.append(child)
 
     return children
 
