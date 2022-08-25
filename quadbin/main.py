@@ -457,14 +457,17 @@ def cell_to_children(cell, children_resolution):
         raise ValueError("Invalid resolution")
 
     resolution_diff = children_resolution - resolution
+    resolution_diff2 = resolution_diff << 1
+    children_resolution2 = children_resolution << 1
+
     child_base = (cell & ~(0x1F << 52)) | (children_resolution << 52)
     child_base = child_base & ~(
-        ((resolution_diff << 2) - 1) << (50 - (resolution << 1))
+        ((1 << resolution_diff2) - 1) << (52 - children_resolution2)
     )
 
     children = []
-    for x in range(resolution_diff << 2):
-        child = child_base | (x << (50 - (resolution << 1)))
+    for x in range(1 << resolution_diff2):
+        child = child_base | (x << (52 - children_resolution2))
         children.append(child)
 
     return children
