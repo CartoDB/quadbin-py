@@ -1,8 +1,8 @@
 # quadbin-py
 
 [![PyPI version](https://badge.fury.io/py/quadbin.svg)](https://badge.fury.io/py/quadbin)
+[![PyPI downloads](https://img.shields.io/pypi/dm/quadbin.svg)](https://pypistats.org/packages/quadbin)
 [![Tests](https://github.com/cartodb/quadbin-py/actions/workflows/ci.yml/badge.svg)](https://github.com/cartodb/quadbin-py/actions)
-<!-- [![PyPI downloads](https://img.shields.io/pypi/dm/quadbin.svg)](https://pypistats.org/packages/quadbin) -->
 
 Python library for quadbin.
 
