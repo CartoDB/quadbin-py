@@ -75,6 +75,18 @@ def test_cell_to_bounding_box():
         45.0,
         0.0,
     ]
+    bbox = quadbin.cell_to_bounding_box(5211632339100106751)
+    assert bbox[0] < bbox[2]
+    assert bbox[1] < bbox[3]
+    bbox = quadbin.cell_to_bounding_box(5212472365983727615)
+    assert bbox[0] < bbox[2]
+    assert bbox[1] < bbox[3]
+    bbox = quadbin.cell_to_bounding_box(5226055182877458431)
+    assert bbox[0] < bbox[2]
+    assert bbox[1] < bbox[3]
+    bbox = quadbin.cell_to_bounding_box(5264708239044902911)
+    assert bbox[0] < bbox[2]
+    assert bbox[1] < bbox[3]
 
 
 def test_get_resolution():
@@ -331,7 +343,7 @@ def test_geometry_to_cells_point():
     assert quadbin.geometry_to_cells(geometry, 0) == [5192650370358181887]
     assert quadbin.geometry_to_cells(geometry, 10) == [5234261499580514303]
     assert quadbin.geometry_to_cells(geometry, 17) == [5265786693163941887]
-    assert quadbin.geometry_to_cells(geometry, 26) == [5306319089810037072]
+    assert quadbin.geometry_to_cells(geometry, 26) == [5306319089810035706]
 
 
 def test_geometry_to_cells_multipoint():
@@ -350,7 +362,7 @@ def test_geometry_to_cells_multipoint():
     )
     assert sorted(quadbin.geometry_to_cells(geometry, 26)) == sorted(
         [
-            5306319089810037072,
+            5306319089810035706,
             5306319089799501962,
         ]
     )

@@ -133,10 +133,14 @@ def point_to_tile_fraction(longitude, latitude, resolution):
     tile: tuple (x, y, z)
     """
     z = resolution
-    powz = 1 << z
-    tanlat = math.tan(math.pi / 4.0 + latitude * math.pi / 360.0)
-    x = powz * ((longitude / 360.0) + 0.5)
-    y = powz * (0.5 - (math.log(tanlat) / (2 * math.pi)))
+    z2 = 1 << z
+    sinlat = math.sin(latitude * math.pi / 180.0)
+    x = z2 * (longitude / 360.0 + 0.5)
+    y = z2 * (0.5 - 0.25 * math.log((1 + sinlat) / (1 - sinlat)) / math.pi)
+
+    # Wrap Tile x
+    x = x % z2
+    x = x + z2 if x < 0 else x
 
     return (x, y, z)
 
