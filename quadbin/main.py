@@ -500,62 +500,6 @@ def geometry_to_cells(geometry, resolution):
     return [tile_to_cell(tile) for tile in tiles]
 
 
-def vertex_canonical_tile(z, x, y, vertex):
-    """Compute tile coordinates of canonical cell for a given vertex.
-
-    The canonical cell is the cell that contains the vertex with a minimum
-    value of the index.
-
-    Parameters
-    ----------
-    z, x, y, vertex : int
-
-    Returns
-    -------
-    tile: tuple (x, y, z, vertex)
-    """
-    if x & 1:  # E cell within parent
-        if y & 1:  # SE cell within parent
-            if vertex == 0:  # NW vertex
-                x &= ~1  # x -= 1
-                y &= ~1  # y -= 1
-                vertex = 3  # -> SE
-            elif vertex == 1:  # NE vertex
-                y &= ~1  # y -= 1
-                vertex = 3  # -> SE
-            elif vertex == 2:  # SW vertex
-                x &= ~1  # x -= 1
-                vertex = 3  # -> SE
-            # else: # vertex == 3: # SE vertex, stay there
-        else:  # NE cell within parent
-            if not (vertex & 1):  # W-side vertex
-                x &= ~1  # x -= 1
-                vertex += 1  # NW -> NE, SW -> SE
-            if not (vertex & 2):  # N-side vertex
-                if y > 0:
-                    y -= 1
-                    vertex += 2  # NE->SE
-    else:  # W cell within parent
-        if y & 1:  # SW cell within parent
-            if not (vertex & 2):  # N-side vertex
-                y &= ~1  # y -= 1
-                vertex += 2  # NW->SW, NE->SE
-            if not (vertex & 1) and x > 0:  # W-side vertex
-                if x > 0:
-                    x -= 1
-                    vertex += 1  # SW->SE
-        else:  # NW cell within parent
-            if not (vertex & 2):  # N-side vertex
-                if y > 0:
-                    y -= 1
-                    vertex += 2
-            if not (vertex & 1):  # W-side vertex
-                if x > 0:
-                    x -= 1
-                    vertex += 1
-    return (x, y, z, vertex)
-
-
 def tile_scalefactor(tile):
     """Inverse of the scale factor at the tile center.
 
