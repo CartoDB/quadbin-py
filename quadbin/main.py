@@ -1,4 +1,5 @@
 import json
+import math
 
 from .tilecover import get_tiles
 from .utils import (
@@ -497,3 +498,127 @@ def geometry_to_cells(geometry, resolution):
         tiles = [tile for tile in get_tiles(geometry, resolution)]
 
     return [tile_to_cell(tile) for tile in tiles]
+
+
+def vertex_canonical_tile(z, x, y, vertex):
+    """Compute tile coordinates of canonical cell for a given vertex.
+
+    The canonical cell is the cell that contains the vertex with a minimum
+    value of the index.
+
+    Parameters
+    ----------
+    z, x, y, vertex : int
+
+    Returns
+    -------
+    tile: tuple (x, y, z, vertex)
+    """
+    if x & 1:  # E cell within parent
+        if y & 1:  # SE cell within parent
+            if vertex == 0:  # NW vertex
+                x &= ~1  # x -= 1
+                y &= ~1  # y -= 1
+                vertex = 3  # -> SE
+            elif vertex == 1:  # NE vertex
+                y &= ~1  # y -= 1
+                vertex = 3  # -> SE
+            elif vertex == 2:  # SW vertex
+                x &= ~1  # x -= 1
+                vertex = 3  # -> SE
+            # else: # vertex == 3: # SE vertex, stay there
+        else:  # NE cell within parent
+            if not (vertex & 1):  # W-side vertex
+                x &= ~1  # x -= 1
+                vertex += 1  # NW -> NE, SW -> SE
+            if not (vertex & 2):  # N-side vertex
+                if y > 0:
+                    y -= 1
+                    vertex += 2  # NE->SE
+    else:  # W cell within parent
+        if y & 1:  # SW cell within parent
+            if not (vertex & 2):  # N-side vertex
+                y &= ~1  # y -= 1
+                vertex += 2  # NW->SW, NE->SE
+            if not (vertex & 1) and x > 0:  # W-side vertex
+                if x > 0:
+                    x -= 1
+                    vertex += 1  # SW->SE
+        else:  # NW cell within parent
+            if not (vertex & 2):  # N-side vertex
+                if y > 0:
+                    y -= 1
+                    vertex += 2
+            if not (vertex & 1):  # W-side vertex
+                if x > 0:
+                    x -= 1
+                    vertex += 1
+    return (x, y, z, vertex)
+
+
+def tile_scalefactor(tile):
+    """Inverse of the scale factor at the tile center.
+
+    Parameters
+    ----------
+    tile : tuple (x, y, z)
+
+    Returns
+    -------
+    float
+    """
+    _, y, z = tile
+    y_offset = 0.5
+    return math.cos(
+        2
+        * math.pi
+        * (
+            math.atan(math.exp(-(2 * (y + y_offset) / (1 << z) - 1) * math.pi))
+            / math.pi
+            - 0.25
+        )
+    )
+
+
+REF_AREA = 508164597540055.75
+AREA_FACTORS = [
+    1.0,
+    1.003741849761155,
+    1.8970972739048304,
+    2.7118085839548,
+    3.0342500406694364,
+    3.1231014735135538,
+    3.1457588045774316,
+    3.151449027223487,
+    3.1528731677136914,
+    3.1532293013524657,
+    3.1533183409109418,
+    3.1533406011847736,
+]
+
+
+def tile_area(tile):
+    """Approximate area of a tile in square meters.
+
+       The area is based on a perfect sphere (WGS84 authalic sphere).
+
+    Parameters
+    ----------
+    tile : tuple (x, y, z)
+
+    Returns
+    -------
+    float
+    """
+    x, y, z = tile
+    area_factor = AREA_FACTORS[min(len(AREA_FACTORS) - 1, z)]
+    area = area_factor * REF_AREA / (1 << (z << 1))
+    center_y = 0 if z == 0 else (1 << (z - 1))
+    if y < center_y - 1 or y > center_y:
+
+        def z_factor(y):
+            return math.pow(tile_scalefactor((x, y, z)), 2)
+
+        area *= z_factor(y) / z_factor(center_y)
+
+    return area
