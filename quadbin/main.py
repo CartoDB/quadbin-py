@@ -11,6 +11,7 @@ from .utils import (
     tile_sibling,
     tile_to_longitude,
     tile_to_latitude,
+    tile_area,
 )
 
 HEADER = 0x4000000000000000
@@ -497,3 +498,19 @@ def geometry_to_cells(geometry, resolution):
         tiles = [tile for tile in get_tiles(geometry, resolution)]
 
     return [tile_to_cell(tile) for tile in tiles]
+
+
+def cell_area(cell):
+    """Approximate area of a cell in square meters.
+
+       The area is based on a perfect sphere (WGS84 authalic sphere).
+
+    Parameters
+    ----------
+    cell : int
+
+    Returns
+    -------
+    float
+    """
+    return tile_area(cell_to_tile(cell))

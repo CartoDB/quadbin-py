@@ -44,6 +44,7 @@ pip install quadbin
 | `cell_to_parent(cell, parent_resolution)` |
 | `cell_to_children(cell, children_resolution)` |
 | `geometry_to_cells(geometry, resolution)` |
+| `cell_area(cell)` |
 
 ## Development
 

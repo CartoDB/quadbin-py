@@ -681,3 +681,9 @@ def test_geometry_to_cells_geometrycollection():
             5274793892418961407,
         ]
     )
+
+
+def test_cell_area():
+    assert quadbin.cell_area(5209574053332910079) == pytest.approx(
+        6023040823252.6641, rel=1e-2
+    )
