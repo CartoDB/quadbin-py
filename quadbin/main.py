@@ -1,5 +1,4 @@
 import json
-import math
 
 from .tilecover import get_tiles
 from .utils import (
@@ -12,6 +11,7 @@ from .utils import (
     tile_sibling,
     tile_to_longitude,
     tile_to_latitude,
+    tile_area,
 )
 
 HEADER = 0x4000000000000000
@@ -500,69 +500,17 @@ def geometry_to_cells(geometry, resolution):
     return [tile_to_cell(tile) for tile in tiles]
 
 
-def tile_scalefactor(tile):
-    """Inverse of the scale factor at the tile center.
-
-    Parameters
-    ----------
-    tile : tuple (x, y, z)
-
-    Returns
-    -------
-    float
-    """
-    _, y, z = tile
-    y_offset = 0.5
-    return math.cos(
-        2
-        * math.pi
-        * (
-            math.atan(math.exp(-(2 * (y + y_offset) / (1 << z) - 1) * math.pi))
-            / math.pi
-            - 0.25
-        )
-    )
-
-
-REF_AREA = 508164597540055.75
-AREA_FACTORS = [
-    1.0,
-    1.003741849761155,
-    1.8970972739048304,
-    2.7118085839548,
-    3.0342500406694364,
-    3.1231014735135538,
-    3.1457588045774316,
-    3.151449027223487,
-    3.1528731677136914,
-    3.1532293013524657,
-    3.1533183409109418,
-    3.1533406011847736,
-]
-
-
-def tile_area(tile):
-    """Approximate area of a tile in square meters.
+def cell_area(cell):
+    """Approximate area of a cell in square meters.
 
        The area is based on a perfect sphere (WGS84 authalic sphere).
 
     Parameters
     ----------
-    tile : tuple (x, y, z)
+    cell : int
 
     Returns
     -------
     float
     """
-    x, y, z = tile
-    area_factor = AREA_FACTORS[min(len(AREA_FACTORS) - 1, z)]
-    area = area_factor * REF_AREA / (1 << (z << 1))
-    center_y = 0 if z == 0 else (1 << (z - 1))
-    if y < center_y - 1 or y > center_y:
-
-        def z_factor(y):
-            return math.pow(tile_scalefactor((x, y, z)), 2)
-
-        area *= z_factor(y) / z_factor(center_y)
-
-    return area
+    return tile_area(cell_to_tile(cell))

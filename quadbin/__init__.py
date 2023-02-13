@@ -16,8 +16,7 @@ from .main import (
     cell_to_parent,
     cell_to_children,
     geometry_to_cells,
-    tile_area,
-    tile_scalefactor,
+    cell_area,
 )
 from ._version import __version__
 
@@ -39,7 +38,6 @@ __all__ = [
     "cell_to_parent",
     "cell_to_children",
     "geometry_to_cells",
-    "tile_area",
-    "tile_scalefactor",
+    "cell_area",
     "__version__",
 ]
