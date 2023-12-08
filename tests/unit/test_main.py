@@ -216,7 +216,7 @@ def test_cell_sibling():
 
 def test_cell_to_parent():
     assert quadbin.cell_to_parent(5209574053332910079, 4) == 5209574053332910079
-    assert quadbin.cell_to_parent(5209574053332910079, 2) == 5200566854078169087
+    assert quadbin.cell_to_parent(5209574053332910079, 2) == 5200813144682790911
     assert quadbin.cell_to_parent(5209574053332910079, 0) == 5192650370358181887
     with pytest.raises(ValueError, match="Invalid resolution"):
         assert quadbin.cell_to_parent(5209574053332910079, 5)
