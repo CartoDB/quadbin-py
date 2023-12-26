@@ -426,7 +426,7 @@ def cell_to_parent(cell, parent_resolution):
     return (
         (cell & ~(0x1F << 52))
         | (parent_resolution << 52)
-        | (FOOTER >> (parent_resolution << 2))
+        | (FOOTER >> (parent_resolution << 1))
     )
 
 
