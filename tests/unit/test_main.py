@@ -223,11 +223,17 @@ def test_cell_to_parent():
     with pytest.raises(ValueError, match="Invalid resolution"):
         assert quadbin.cell_to_parent(5209574053332910079, -1)
 
+
 def test_cell_to_parent_and_cell_to_tile_reversibility():
-    for cell, res in ((5203557525705719807, 2), (5221564502511714303, 5), (5263677313026883583, 13)):
+    for cell, res in (
+        (5203557525705719807, 2),
+        (5221564502511714303, 5),
+        (5263677313026883583, 13),
+    ):
         parent_cell = quadbin.cell_to_parent(cell, res)
         parent_tile = quadbin.cell_to_tile(parent_cell)
         assert quadbin.tile_to_cell(parent_tile) == parent_cell
+
 
 def test_cell_to_children():
     assert sorted(quadbin.cell_to_children(5192650370358181887, 1)) == sorted(
