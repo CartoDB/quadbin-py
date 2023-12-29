@@ -2,7 +2,7 @@ import math
 
 MAX_LONGITUDE = 180.0
 MIN_LONGITUDE = -MAX_LONGITUDE
-MAX_LATITUDE = 85.051129
+MAX_LATITUDE = 89.0
 MIN_LATITUDE = -MAX_LATITUDE
 
 UP = 0
@@ -136,7 +136,8 @@ def point_to_tile_fraction(longitude, latitude, resolution):
     z2 = 1 << z
     sinlat = math.sin(latitude * math.pi / 180.0)
     x = z2 * (longitude / 360.0 + 0.5)
-    y = z2 * (0.5 - 0.25 * math.log((1 + sinlat) / (1 - sinlat)) / math.pi)
+    yfraction = 0.5 - 0.25 * math.log((1 + sinlat) / (1 - sinlat)) / math.pi
+    y = clip_number(z2 * yfraction, 0, z2 - 1)
 
     # Wrap Tile x
     x = x % z2
