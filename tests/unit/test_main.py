@@ -48,6 +48,13 @@ def test_cell_to_point():
 
 def test_point_to_cell():
     assert quadbin.point_to_cell(33.75, -11.178401873711776, 4) == 5209574053332910079
+    assert quadbin.point_to_cell(0.0, 85.05112877980659, 26) == 5306366260949286912
+    assert quadbin.point_to_cell(0.0, 88, 26) == 5306366260949286912
+    assert quadbin.point_to_cell(0.0, 90, 26) == 5306366260949286912
+    assert quadbin.point_to_cell(0.0, -85.05112877980659, 26) == 5309368660700867242
+    assert quadbin.point_to_cell(0.0, -88, 26) == 5309368660700867242
+    assert quadbin.point_to_cell(0.0, -90, 26) == 5309368660700867242
+
     with pytest.raises(ValueError, match="Invalid resolution"):
         assert quadbin.point_to_cell(33.75, -11.178401873711776, -1)
     with pytest.raises(ValueError, match="Invalid resolution"):
